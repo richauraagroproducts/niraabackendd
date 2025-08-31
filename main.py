@@ -38,12 +38,26 @@ CLASS_NAMES = model.names  # dict: {0: "acne", 1: "eczema", ...}
 # -------------------------
 app = FastAPI(title="YOLO Inference API")
 
+# Define allowed origins for CORS
+ALLOWED_ORIGINS = [
+   
+    "http://localhost:5173",  # Another possible dev server port (e.g., Vite)
+    "https://niraadevice.netlify.app",  # Production frontend domain
+   
+    # Add more domains as needed
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # change to frontend domain in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,  # Explicitly list allowed domains
+    allow_credentials=True,  # Allow cookies/credentials if needed
+    allow_methods=["GET", "POST", "OPTIONS"],  # Explicitly allow methods used
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "Accept",
+        "X-Requested-With",
+    ],  # Allow specific headers
 )
 
 # -------------------------
@@ -67,7 +81,7 @@ async def detect(file: UploadFile = File(...)):
             for box, conf, cls in zip(boxes, confs, cls_ids):
                 detections.append({
                     "class_id": int(cls),
-                    "class_name": CLASS_NAMES[int(cls)],  # ✅ Added name
+                    "class_name": CLASS_NAMES[int(cls)],
                     "confidence": float(conf),
                     "box": [float(x) for x in box]
                 })
